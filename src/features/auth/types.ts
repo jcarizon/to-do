@@ -7,6 +7,7 @@ export interface AuthUser {
 export interface AuthState {
   user: AuthUser | null;
   loading: boolean;
+  authReady?: boolean;
   error: string | null;
 }
 
