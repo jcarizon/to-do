@@ -2,8 +2,8 @@
 
 import { useEffect } from "react";
 import { onAuthStateChanged } from "firebase/auth";
-import { auth } from "@/lib/firebase";
-import { setUser, setAuthLoading, clearError } from "../store/authSlice";
+import { auth } from "@/lib/firebase/firebase";
+import { setUser, setAuthLoading } from "../store/authSlice";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import type { AuthUser } from "../types";
 

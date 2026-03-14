@@ -5,8 +5,8 @@ import {
   signOut,
   updateProfile,
 } from "firebase/auth";
-import { auth } from "@/lib/firebase";
-import { createUserDocument } from "@/lib/firestore";
+import { auth } from "@/lib/firebase/firebase";
+import { createUserDocument } from "@/lib/firebase/firestore";
 import type {
   AuthState,
   AuthUser,
@@ -47,7 +47,7 @@ export const registerUser = createAsyncThunk(
         password
       );
       await updateProfile(credential.user, { displayName });
-      await createUserDocument(credential.user.uid, { email, displayName });
+      await createUserDocument({ uid: credential.user.uid, data: { email, displayName } });
       return {
         uid: credential.user.uid,
         email: credential.user.email,

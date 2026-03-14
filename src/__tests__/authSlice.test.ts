@@ -14,7 +14,7 @@ import {
   signOut,
   updateProfile,
 } from "firebase/auth";
-import { createUserDocument } from "@/lib/firestore";
+import { createUserDocument } from "@/lib/firebase/firestore";
 
 // Mock firestore helper
 jest.mock("@/lib/firestore", () => ({
