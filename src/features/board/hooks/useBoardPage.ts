@@ -1,21 +1,23 @@
 'use client';
 
-import { useState } from 'react';
+import { useCallback, useState } from 'react';
 import { doc, updateDoc } from 'firebase/firestore';
 import { useAppDispatch } from '@/store/hooks';
 import { useAuth } from '@/features/auth/hooks/useAuth';
 import { useBoard } from '@/features/board/hooks/useBoard';
 import { logoutUser } from '@/features/auth/store/authSlice';
-import { addColumn } from '@/features/board/store/boardSlice';
+import { addColumn, reorderColumnsOptimistic, reorderColumns  } from '@/features/board/store/boardSlice';
 import { appendBoardEvent } from '@/features/history/store/historySlice';
 import { db } from '@/lib/firebase/firebase';
 import type { Board, Column } from '@/features/board/types';
 import type { Ticket, Priority } from '@/features/tickets/types';
+import { useDragAndDrop } from '../dnd';
 
 export function useBoardPage() {
   const dispatch = useAppDispatch();
   const { user } = useAuth();
   const { board, columns, tickets, loading, error, uid, boardId } = useBoard();
+  const dnd = useDragAndDrop();
 
   const [activeTicket, setActiveTicket] = useState<Ticket | null>(null);
   const [showAddCategory, setShowAddCategory] = useState(false);
@@ -67,6 +69,27 @@ export function useBoardPage() {
     );
   };
 
+  const handleColumnDrop = useCallback(
+    (targetColumnId: string) => {
+      const { draggedColumnId } = dnd.dragState;
+      if (!draggedColumnId || draggedColumnId === targetColumnId || !board) return;
+
+      const currentOrder = board.columnOrder ?? [];
+      const from = currentOrder.indexOf(draggedColumnId);
+      const to = currentOrder.indexOf(targetColumnId);
+      if (from === -1 || to === -1) return;
+
+      const next = [...currentOrder];
+      next.splice(from, 1);
+      next.splice(to, 0, draggedColumnId);
+
+      dispatch(reorderColumnsOptimistic(next));
+      dispatch(reorderColumns({ uid: uid!, boardId: boardId!, columnOrder: next }));
+      dnd.resetDrag();
+    },
+    [dnd, board, uid, boardId, dispatch],
+  );
+
   return {
     user,
     handleLogout,
@@ -88,5 +111,7 @@ export function useBoardPage() {
     setAddTicketColumnId,
     handleUpdatePriorities,
     handleAddColumn,
+    dnd,
+    handleColumnDrop,
   };
 }

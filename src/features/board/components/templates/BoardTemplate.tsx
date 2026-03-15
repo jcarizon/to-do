@@ -1,7 +1,6 @@
 'use client';
 
 import { Button, Spinner } from '@/components/ui/atoms';
-import { TicketCard } from '@/features/board/components/molecules';
 import { 
   TicketModal, 
   AddCategoryModal, 
@@ -31,7 +30,11 @@ export function BoardTemplate() {
     handleAddColumn,
     addTicketColumnId,
     setAddTicketColumnId,
+    dnd,
+    handleColumnDrop,
   } = useBoardPage();
+
+  const { dragState, startColumnDrag, setOverColumn, resetDrag } = dnd;
 
   if (loading) {
     return (
@@ -81,6 +84,31 @@ export function BoardTemplate() {
               columnOrder={board?.columnOrder ?? []}
               onOpenTicket={handleOpenTicket}
               onAddTicket={setAddTicketColumnId}
+
+              isDragging={dragState.draggedColumnId === column.id}
+              isDropTarget={
+                dragState.draggedColumnId !== null &&
+                dragState.draggedColumnId !== column.id &&
+                dragState.overColumnId === column.id
+              }
+              onDragStart={e => {
+                e.dataTransfer.effectAllowed = 'move';
+                e.dataTransfer.setData('type', 'column');
+                e.dataTransfer.setData('columnId', column.id);
+                startColumnDrag(column.id);
+              }}
+              onDragOver={e => {
+                e.preventDefault();
+                if (dragState.draggedColumnId && dragState.draggedColumnId !== column.id) {
+                  setOverColumn(column.id);
+                }
+              }}
+              onDragLeave={() => setOverColumn(null)}
+              onDrop={e => {
+                e.preventDefault();
+                handleColumnDrop(column.id);
+              }}
+              onDragEnd={() => resetDrag()}
             />
           ))}
 

@@ -4,6 +4,7 @@ import { Button, Input } from '@/components/ui/atoms';
 import { TicketCard } from '@/features/board/components/molecules';
 import { BoardColumnProps } from './types';
 import { useBoardColumn } from './useBoardColumn';
+import { DragHandle } from '../../atoms';
 
 export function BoardColumn({
   column,
@@ -30,13 +31,33 @@ export function BoardColumn({
     renameValue,
     setRenameValue,
     inputRef,
-    liveTitle
+    liveTitle,
+    isDragging,
+    isDropTarget,
+    onDragStart,
+    onDragOver,
+    onDragLeave,
+    onDrop,    
+    onDragEnd,
   } = useBoardColumn({ column, tickets, priorities, uid, boardId, columnOrder, onOpenTicket, onAddTicket });
 
   return (
-    <div className="flex flex-col w-72 flex-shrink-0">
+    <div
+      draggable
+      onDragStart={onDragStart}
+      onDragOver={onDragOver}
+      onDragLeave={onDragLeave}
+      onDrop={onDrop}
+      onDragEnd={onDragEnd}
+      className={`
+        flex flex-col w-72 shrink-0 bg-zinc-900 rounded-xl border transition-all duration-150
+        ${isDropTarget ? 'border-violet-500 ring-2 ring-violet-500/30 scale-[1.01]' : 'border-zinc-800'}
+        ${isDragging ? 'opacity-40 scale-[0.98]' : 'opacity-100'}
+      `}
+    >
 
       <div className="flex items-center gap-2 mb-2 px-1">
+        <DragHandle />
         <span
           className="w-2.5 h-2.5 rounded-full flex-shrink-0"
           style={{ backgroundColor: column.color }}

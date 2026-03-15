@@ -10,6 +10,15 @@ export const useBoardColumn = ({
   uid,
   boardId,
   columnOrder,
+  onOpenTicket,
+  onAddTicket,
+  isDragging,
+  isDropTarget,
+  onDragStart,
+  onDragOver,
+  onDragLeave,
+  onDrop,
+  onDragEnd,
 }: BoardColumnProps) => {
     const dispatch = useAppDispatch();
     const inputRef = useRef<HTMLInputElement>(null);
@@ -76,6 +85,14 @@ export const useBoardColumn = ({
       renameValue,
       setRenameValue,
       inputRef,
-      liveTitle
+      liveTitle,
+      
+      isDragging,
+      isDropTarget,
+      onDragStart,
+      onDragOver,
+      onDragLeave,
+      onDrop,    
+      onDragEnd,
     };
   };
