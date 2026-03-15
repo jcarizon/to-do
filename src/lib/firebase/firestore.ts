@@ -26,6 +26,7 @@ import type {
   IAppendTicketHistoryEventDocument,
   ITicketHistoryDocument,
 } from "./types";
+import type { Ticket } from "@/features/tickets/types";
 
 export async function createUserDocument({ uid, data }: IUser) {
   const userRef = doc(db, "users", uid);
@@ -84,9 +85,9 @@ export async function createTicket({ uid, boardId, ticketId, data }: ICreateTick
   await setDoc(doc(db, 'users', uid, 'boards', boardId, 'tickets', ticketId), data);
 }
 
-export async function fetchTickets({ uid, boardId }: IBoardDocumentBase) {
+export async function fetchTickets({ uid, boardId }: IBoardDocumentBase): Promise<Ticket[]> {
   const snap = await getDocs(collection(db, 'users', uid, 'boards', boardId, 'tickets'));
-  return snap.docs.map(d => ({ id: d.id, ...d.data() }));
+  return snap.docs.map(d => ({ id: d.id, ...d.data() })) as Ticket[];
 }
 
 export async function updateTicket({ uid, boardId, ticketId, data }: IUpdateTicketDocument) {

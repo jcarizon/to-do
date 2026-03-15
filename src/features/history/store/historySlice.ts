@@ -1,5 +1,5 @@
-import { fetchBoard, fetchBoardHistory, fetchColumns, fetchTicketHistory } from "@/lib/firebase/firestore";
-import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
+import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
+import { fetchBoardHistory, fetchTicketHistory } from '@/lib/firebase/firestore';
 import { HistoryState } from '../types';
 
 const initialState: HistoryState = {
@@ -11,23 +11,22 @@ const initialState: HistoryState = {
 export const loadBoardHistory = createAsyncThunk(
   'history/loadBoardHistory',
   async ({ uid, boardId }: { uid: string; boardId: string }) => {
-    return await fetchBoardHistory(uid, boardId);
+    return await fetchBoardHistory({ uid, boardId });
   }
 );
 
 export const loadTicketHistory = createAsyncThunk(
   'history/loadTicketHistory',
   async ({ uid, boardId, ticketId }: { uid: string; boardId: string; ticketId: string }) => {
-    const events = await fetchTicketHistory(uid, boardId, ticketId);
+    const events = await fetchTicketHistory({ uid, boardId, ticketId });
     return { ticketId, events };
   }
 );
 
 const historySlice = createSlice({
   name: 'history',
-  initialState, 
+  initialState,
   reducers: {
-    // Optimistically append events so the UI reflects writes immediately
     appendBoardEvent(state, action) {
       state.boardEvents.unshift(action.payload);
     },
@@ -40,7 +39,6 @@ const historySlice = createSlice({
   extraReducers: (builder) => {
     builder
       .addCase(loadBoardHistory.fulfilled, (state, action) => {
-        // Sort descending (most recent first)
         state.boardEvents = [...action.payload].sort(
           (a: any, b: any) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
         );

@@ -1,7 +1,7 @@
 import { SpinnerProps } from "./types";
 import { useSpinner } from "./useSpiiner";
 
-export function Spinner({ size = 'md', className = '' }: SpinnerProps) {
+export const Spinner = ({ size = 'md', className = '' }: SpinnerProps) => {
   const { sizeClasses } = useSpinner();
   return (
     <span

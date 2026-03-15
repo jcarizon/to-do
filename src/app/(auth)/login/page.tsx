@@ -1,4 +1,4 @@
-import { AuthCard } from "@/components/ui/organisms/AuthCard";
+import { AuthCard } from "@/components/ui";
 import LoginForm from "@/features/auth/components/LoginForm";
 
 export default function LoginPage() {

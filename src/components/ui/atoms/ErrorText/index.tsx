@@ -1,6 +1,6 @@
 import { ErrorTextProps } from "./types";
 
-export function ErrorText({ id, children, className = '' }: ErrorTextProps) {
+export const ErrorText = ({ id, children, className = '' }: ErrorTextProps) => {  
   return (
     <p
       id={id}

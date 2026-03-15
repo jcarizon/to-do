@@ -4,7 +4,7 @@ import { Spinner } from '../Spinner';
 import { ButtonProps } from './types';
 import { useButton } from './useButton';
 
-export function Button({
+export const Button = ({
   variant = 'primary',
   size = 'md',
   isLoading = false,
@@ -13,7 +13,7 @@ export function Button({
   children,
   className = '',
   ...props
-}: ButtonProps) {
+}: ButtonProps) => {
   const { 
     variantClasses, 
     sizeClasses, 

@@ -16,8 +16,8 @@ export interface Ticket {
   priority: string | null;
   priorityOrder: number;
   notifyDaysBefore: number;
-  createdAt: string;
-  updatedAt: string;
+  createdAt?: string;
+  updatedAt?: string;
 }
 
 export interface TicketsState {

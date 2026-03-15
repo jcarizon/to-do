@@ -1,9 +1,4 @@
-export interface Board {
-  id: string;
-  title: string;
-  createdAt: string;
-  columnOrder: string[];
-}
+import { Priority } from "../tickets/types";
 
 export interface Column {
   id: string;
@@ -11,6 +6,18 @@ export interface Column {
   title: string;
   color: string;
   order: number;
+  createdAt?: string;
+  updatedAt?: string;
+}
+
+export interface Board {
+  id: string;
+  uid: string;
+  title: string;
+  columnOrder: string[];
+  priorities?: Priority[];
+  createdAt?: string;
+  updatedAt?: string;
 }
 
 export interface BoardState {
