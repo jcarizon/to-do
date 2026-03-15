@@ -1,25 +1,48 @@
-import { useAppDispatch } from "@/store/hooks";
+import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import { BoardColumnProps } from "./types";
-import { useState } from "react";
-import { removeColumn } from "@/features/board/store/boardSlice";
+import { useRef, useState } from "react";
+import { removeColumn, updateColumnTitle } from "@/features/board/store/boardSlice";
 import { appendBoardEvent } from "@/features/history/store/historySlice";
 
 export const useBoardColumn = ({
   column,
   tickets,
-  priorities,
   uid,
   boardId,
   columnOrder,
-  onOpenTicket,
-  onAddTicket,
 }: BoardColumnProps) => {
-  
     const dispatch = useAppDispatch();
+    const inputRef = useRef<HTMLInputElement>(null);
+
+    const liveTitle = useAppSelector(
+      (s) => s.board.columns[column.id]?.title ?? column.title,
+    );
+
     const [menuOpen, setMenuOpen] = useState(false);
     const [confirmDelete, setConfirmDelete] = useState(false);
+    const [isRenaming, setIsRenaming] = useState(false);
+    const [renameValue, setRenameValue] = useState(column.title);
   
     const sorted = [...tickets].sort((a, b) => a.priorityOrder - b.priorityOrder);
+
+    const startRename = () => {
+      setRenameValue(column.title);
+      setIsRenaming(true);
+      setMenuOpen(false);
+      setTimeout(() => inputRef.current?.select(), 0);
+    };
+  
+    const commitRename = async () => {
+      const trimmed = renameValue.trim();
+      setIsRenaming(false);
+      if (!trimmed || trimmed === column.title) return;
+      await dispatch(updateColumnTitle({ uid, boardId, columnId: column.id, title: trimmed }));
+    };
+  
+    const cancelRename = () => {
+      setRenameValue(column.title);
+      setIsRenaming(false);
+    };
   
     const handleDelete = async () => {
       await dispatch(removeColumn({ uid, boardId, columnId: column.id, columnOrder }));
@@ -46,5 +69,13 @@ export const useBoardColumn = ({
       confirmDelete,
       setConfirmDelete,
       setMenuOpen,
+      isRenaming,
+      startRename,
+      commitRename,
+      cancelRename,
+      renameValue,
+      setRenameValue,
+      inputRef,
+      liveTitle
     };
   };

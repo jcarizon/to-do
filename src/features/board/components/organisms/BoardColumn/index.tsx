@@ -1,6 +1,6 @@
 'use client';
 
-import { Button } from '@/components/ui/atoms';
+import { Button, Input } from '@/components/ui/atoms';
 import { TicketCard } from '@/features/board/components/molecules';
 import { BoardColumnProps } from './types';
 import { useBoardColumn } from './useBoardColumn';
@@ -22,7 +22,15 @@ export function BoardColumn({
     menuOpen, 
     confirmDelete, 
     setConfirmDelete, 
-    setMenuOpen 
+    setMenuOpen,
+    isRenaming,
+    startRename,
+    commitRename,
+    cancelRename,
+    renameValue,
+    setRenameValue,
+    inputRef,
+    liveTitle
   } = useBoardColumn({ column, tickets, priorities, uid, boardId, columnOrder, onOpenTicket, onAddTicket });
 
   return (
@@ -33,9 +41,29 @@ export function BoardColumn({
           className="w-2.5 h-2.5 rounded-full flex-shrink-0"
           style={{ backgroundColor: column.color }}
         />
-        <h3 className="text-sm font-semibold text-zinc-300 truncate flex-1">
-          {column.title}
-        </h3>
+
+        {isRenaming ? (
+          <Input
+            ref={inputRef}
+            value={renameValue}
+            onChange={(e) => setRenameValue(e.target.value)}
+            onBlur={commitRename}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') commitRename();
+              if (e.key === 'Escape') cancelRename();
+            }}
+            className="flex-1 !bg-zinc-800 !text-zinc-100 !border-zinc-600 focus:!border-zinc-400 !py-0.5 !px-2 text-sm font-semibold"
+          />
+        ) : (
+          <h3
+            className="text-sm font-semibold text-zinc-300 truncate flex-1 cursor-pointer hover:text-white transition-colors"
+            onDoubleClick={startRename}
+            title="Double-click to rename"
+          >
+            {liveTitle}
+          </h3>
+        )}
+
         <span className="text-xs text-zinc-600 font-mono flex-shrink-0">
           {tickets.length}
         </span>
@@ -53,23 +81,23 @@ export function BoardColumn({
 
           {menuOpen && (
             <>
-              <div
-                className="fixed inset-0 z-10"
-                onClick={closeMenu}
-              />
-
+              <div className="fixed inset-0 z-10" onClick={closeMenu} />
               <div className="absolute right-0 top-full mt-1 z-20 bg-zinc-800 border border-zinc-700 rounded-lg shadow-xl py-1 w-44">
                 <button
                   type="button"
-                  onClick={() => {
-                    onAddTicket(column.id);
-                    closeMenu();
-                  }}
+                  onClick={() => { onAddTicket(column.id); closeMenu(); }}
                   className="w-full text-left px-3 py-2 text-xs text-zinc-300 hover:bg-zinc-700 transition-colors"
                 >
                   + Add ticket
                 </button>
-
+                <button
+                  type="button"
+                  onClick={startRename}
+                  className="w-full text-left px-3 py-2 text-xs text-zinc-300 hover:bg-zinc-700 transition-colors"
+                >
+                  Rename column
+                </button>
+                <div className="my-1 border-t border-zinc-700" />
                 {!confirmDelete ? (
                   <button
                     type="button"
@@ -84,20 +112,10 @@ export function BoardColumn({
                       Delete this column? Tickets will remain.
                     </p>
                     <div className="flex gap-2">
-                      <Button
-                        variant="danger"
-                        size="sm"
-                        onClick={handleDelete}
-                        className="text-xs"
-                      >
+                      <Button variant="danger" size="sm" onClick={handleDelete}>
                         Confirm
                       </Button>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => setConfirmDelete(false)}
-                        className="text-xs"
-                      >
+                      <Button variant="ghost" size="sm" onClick={() => setConfirmDelete(false)}>
                         Cancel
                       </Button>
                     </div>

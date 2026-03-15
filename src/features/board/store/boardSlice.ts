@@ -8,6 +8,8 @@ import {
   updateColumnOrder,
 } from "@/lib/firebase/firestore";
 import { Board, BoardState, Column } from "../types";
+import { doc, updateDoc } from "firebase/firestore";
+import { db } from '@/lib/firebase/firebase';
 
 const initialState: BoardState = {
   board: null,
@@ -92,6 +94,21 @@ export const removeColumn = createAsyncThunk(
   }
 );
 
+export const updateColumnTitle = createAsyncThunk(
+  'board/updateColumnTitle',
+  async ({
+    uid, boardId, columnId, title,
+  }: {
+    uid: string; boardId: string; columnId: string; title: string;
+  }) => {
+    await updateDoc(
+      doc(db, 'users', uid, 'boards', boardId, 'columns', columnId),
+      { title },
+    );
+    return { columnId, title };
+  },
+);
+
 export const reorderColumns = createAsyncThunk(
   "board/reorderColumns",
   async ({
@@ -157,6 +174,12 @@ const boardSlice = createSlice({
         const { columnId, newOrder } = action.payload;
         delete state.columns[columnId];
         if (state.board) state.board.columnOrder = newOrder;
+      })
+      .addCase(updateColumnTitle.fulfilled, (state, action) => {
+        const { columnId, title } = action.payload;
+        if (state.columns[columnId]) {
+          state.columns[columnId].title = title;
+        }
       })
       .addCase(reorderColumns.fulfilled, (state, action) => {
         if (state.board) state.board.columnOrder = action.payload;
