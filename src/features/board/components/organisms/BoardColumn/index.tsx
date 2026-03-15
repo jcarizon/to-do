@@ -1,0 +1,144 @@
+'use client';
+
+import { Button } from '@/components/ui/atoms';
+import { TicketCard } from '@/features/board/components/molecules';
+import { BoardColumnProps } from './types';
+import { useBoardColumn } from './useBoardColumn';
+
+export function BoardColumn({
+  column,
+  tickets,
+  priorities,
+  uid,
+  boardId,
+  columnOrder,
+  onOpenTicket,
+  onAddTicket,
+}: BoardColumnProps) {
+  const { 
+    sorted, 
+    handleDelete, 
+    closeMenu, 
+    menuOpen, 
+    confirmDelete, 
+    setConfirmDelete, 
+    setMenuOpen 
+  } = useBoardColumn({ column, tickets, priorities, uid, boardId, columnOrder, onOpenTicket, onAddTicket });
+
+  return (
+    <div className="flex flex-col w-72 flex-shrink-0">
+
+      <div className="flex items-center gap-2 mb-2 px-1">
+        <span
+          className="w-2.5 h-2.5 rounded-full flex-shrink-0"
+          style={{ backgroundColor: column.color }}
+        />
+        <h3 className="text-sm font-semibold text-zinc-300 truncate flex-1">
+          {column.title}
+        </h3>
+        <span className="text-xs text-zinc-600 font-mono flex-shrink-0">
+          {tickets.length}
+        </span>
+
+        <div className="relative flex-shrink-0">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => setMenuOpen((v) => !v)}
+            className="!px-1.5 !py-0.5 text-zinc-600 hover:text-zinc-300"
+            aria-label="Column options"
+          >
+            ⋯
+          </Button>
+
+          {menuOpen && (
+            <>
+              <div
+                className="fixed inset-0 z-10"
+                onClick={closeMenu}
+              />
+
+              <div className="absolute right-0 top-full mt-1 z-20 bg-zinc-800 border border-zinc-700 rounded-lg shadow-xl py-1 w-44">
+                <button
+                  type="button"
+                  onClick={() => {
+                    onAddTicket(column.id);
+                    closeMenu();
+                  }}
+                  className="w-full text-left px-3 py-2 text-xs text-zinc-300 hover:bg-zinc-700 transition-colors"
+                >
+                  + Add ticket
+                </button>
+
+                {!confirmDelete ? (
+                  <button
+                    type="button"
+                    onClick={() => setConfirmDelete(true)}
+                    className="w-full text-left px-3 py-2 text-xs text-red-400 hover:bg-zinc-700 transition-colors"
+                  >
+                    Delete column
+                  </button>
+                ) : (
+                  <div className="px-3 py-2 space-y-2">
+                    <p className="text-[10px] text-zinc-500 leading-snug">
+                      Delete this column? Tickets will remain.
+                    </p>
+                    <div className="flex gap-2">
+                      <Button
+                        variant="danger"
+                        size="sm"
+                        onClick={handleDelete}
+                        className="text-xs"
+                      >
+                        Confirm
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => setConfirmDelete(false)}
+                        className="text-xs"
+                      >
+                        Cancel
+                      </Button>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </>
+          )}
+        </div>
+      </div>
+
+      <div
+        className="h-0.5 rounded-full mb-3 opacity-50"
+        style={{ backgroundColor: column.color }}
+      />
+
+      <div className="flex-1 space-y-2 min-h-[60px]">
+        {sorted.length === 0 ? (
+          <div className="border border-dashed border-zinc-800 rounded-lg p-4 text-center">
+            <p className="text-xs text-zinc-600">No tickets yet</p>
+          </div>
+        ) : (
+          sorted.map((ticket) => (
+            <TicketCard
+              key={ticket.id}
+              ticket={ticket}
+              priorities={priorities}
+              onClick={() => onOpenTicket(ticket)}
+            />
+          ))
+        )}
+      </div>
+
+      <button
+        type="button"
+        onClick={() => onAddTicket(column.id)}
+        className="mt-3 w-full text-xs text-zinc-700 hover:text-zinc-400 border border-dashed border-zinc-800 hover:border-zinc-600 rounded-lg py-2 transition-all"
+      >
+        + Add ticket
+      </button>
+
+    </div>
+  );
+}

@@ -2,7 +2,12 @@
 
 import { Button, Spinner } from '@/components/ui/atoms';
 import { TicketCard } from '@/features/board/components/molecules';
-import { TicketModal, AddCategoryModal, AddTicketModal } from '@/features/board/components/organisms';
+import { 
+  TicketModal, 
+  AddCategoryModal, 
+  AddTicketModal,
+  BoardColumn
+ } from '@/features/board/components/organisms';
 import { useBoardPage } from '@/features/board/hooks/useBoardPage';
 
 export function BoardTemplate() {
@@ -65,62 +70,19 @@ export function BoardTemplate() {
 
       <main className="flex-1 overflow-x-auto overflow-y-hidden">
         <div className="flex gap-5 p-6 h-full items-start min-w-max">
-
-          {orderedColumns.map((column) => {
-            const colTickets = ticketsForColumn(column.id);
-            const sorted = [...colTickets].sort(
-              (a, b) => a.priorityOrder - b.priorityOrder,
-            );
-
-            return (
-              <div key={column.id} className="flex flex-col w-72 flex-shrink-0">
-
-                <div className="flex items-center gap-2 mb-2 px-1">
-                  <span
-                    className="w-2.5 h-2.5 rounded-full flex-shrink-0"
-                    style={{ backgroundColor: column.color }}
-                  />
-                  <h3 className="text-sm font-semibold text-zinc-300 truncate flex-1">
-                    {column.title}
-                  </h3>
-                  <span className="text-xs text-zinc-600 font-mono">
-                    {colTickets.length}
-                  </span>
-                </div>
-
-                <div
-                  className="h-0.5 rounded-full mb-3 opacity-50"
-                  style={{ backgroundColor: column.color }}
-                />
-
-                <div className="space-y-2 min-h-[60px]">
-                  {sorted.length === 0 ? (
-                    <div className="border border-dashed border-zinc-800 rounded-lg p-4 text-center">
-                      <p className="text-xs text-zinc-600">No tickets yet</p>
-                    </div>
-                  ) : (
-                    sorted.map((ticket) => (
-                      <TicketCard
-                        key={ticket.id}
-                        ticket={ticket}
-                        priorities={priorities}
-                        onClick={() => handleOpenTicket(ticket)}
-                      />
-                    ))
-                  )}
-                </div>
-
-                <button
-                  type="button"
-                  onClick={() => setAddTicketColumnId(column.id)}
-                  className="mt-3 w-full text-xs text-zinc-700 hover:text-zinc-400 border border-dashed border-zinc-800 hover:border-zinc-600 rounded-lg py-2 transition-all"
-                >
-                  + Add ticket
-                </button>
-
-              </div>
-            );
-          })}
+          {orderedColumns.map((column) => (
+            <BoardColumn
+              key={column.id}
+              column={column}
+              tickets={ticketsForColumn(column.id)}
+              priorities={priorities}
+              uid={uid}
+              boardId={boardId}
+              columnOrder={board?.columnOrder ?? []}
+              onOpenTicket={handleOpenTicket}
+              onAddTicket={setAddTicketColumnId}
+            />
+          ))}
 
           <div className="flex-shrink-0 w-72">
             <button
