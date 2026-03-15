@@ -1,3 +1,5 @@
+import { Column } from "@/features/board/types";
+
 // For user document structure and related types
 export interface IUserDocument {
   email: string;
@@ -29,6 +31,7 @@ export interface IUpdateBoardDocument extends IBoardDocumentBase {
 export interface ICreateColumnDocument extends IBoardDocumentBase {
   columnId: string;
   data: object;
+  column: Column;
 }
 
 export interface IDeleteColumnDocument extends IBoardDocumentBase {

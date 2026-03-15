@@ -1,5 +1,5 @@
-import { fetchBoard, fetchBoardHistory, fetchColumns, fetchTicketHistory } from "@/lib/firebase/firestore";
-import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
+import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
+import { fetchBoardHistory, fetchTicketHistory } from '@/lib/firebase/firestore';
 import { HistoryState } from '../types';
 
 const initialState: HistoryState = {
@@ -25,7 +25,7 @@ export const loadTicketHistory = createAsyncThunk(
 
 const historySlice = createSlice({
   name: 'history',
-  initialState, 
+  initialState,
   reducers: {
     // Optimistically append events so the UI reflects writes immediately
     appendBoardEvent(state, action) {
