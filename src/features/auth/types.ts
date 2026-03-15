@@ -19,3 +19,10 @@ export interface LoginCredentials {
 export interface RegisterCredentials extends LoginCredentials {
   displayName: string;
 }
+
+export interface FieldErrors {
+  displayName?: string;
+  email?: string;
+  password?: string;
+  confirmPassword?: string;
+}

@@ -1,7 +1,8 @@
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import { useRouter } from "next/navigation";
-import { FormEvent, useEffect, useState } from "react";
-import { clearError, registerUser } from "../store/authSlice";
+import { FormEvent, useState } from "react";
+import { registerUser } from "../store/authSlice";
+import { FieldErrors } from "../types";
 
 export const useRegisterForm = () => {
     const dispatch = useAppDispatch();
@@ -10,31 +11,40 @@ export const useRegisterForm = () => {
   
     const [displayName, setDisplayName] = useState("");
     const [email, setEmail] = useState("");
-    const [password, setPassword] = useState("");
-    const [confirm, setConfirm] = useState("");
-    const [localError, setLocalError] = useState("");
+    const [password, setPassword] = useState('');
+    const [confirmPassword, setConfirmPassword] = useState('');
+    const [fieldErrors, setFieldErrors] = useState<FieldErrors>({});
+
+    const validate = (): boolean => {
+      const errors: FieldErrors = {};
   
-    async function handleSubmit(e: FormEvent) {
+      if (!displayName.trim()) {
+        errors.displayName = 'Name is required.';
+      }
+      if (!email.trim()) {
+        errors.email = 'Email is required.';
+      }
+      if (password.length < 8) {
+        errors.password = 'Password must be at least 8 characters.';
+      }
+      if (password !== confirmPassword) {
+        errors.confirmPassword = 'Passwords do not match.';
+      }
+  
+      setFieldErrors(errors);
+      return Object.keys(errors).length === 0;
+    }
+  
+    const handleSubmit = async (e: FormEvent) => {
       e.preventDefault();
-      setLocalError("");
-      dispatch(clearError());
-  
-      if (password !== confirm) {
-        setLocalError("Passwords do not match.");
-        return;
-      }
-      if (password.length < 6) {
-        setLocalError("Password must be at least 6 characters.");
-        return;
-      }
+      if (!validate()) return;
   
       const result = await dispatch(registerUser({ email, password, displayName }));
       if (registerUser.fulfilled.match(result)) {
-        router.push("/board");
+        router.push('/board');
       }
     }
   
-    const combinedError = localError || error;
   return {
     handleSubmit,
     displayName,
@@ -43,9 +53,9 @@ export const useRegisterForm = () => {
     setEmail,
     password,
     setPassword,
-    confirm,
-    setConfirm,
-    combinedError,
+    confirmPassword,
+    setConfirmPassword,
+    fieldErrors,
     loading,
     error,
   };
