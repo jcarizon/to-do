@@ -1,28 +1,27 @@
+export type Priority = {
+  id: string;
+  label: string;
+  color: string;
+  order: number;
+};
+
 export interface Ticket {
   id: string;
   boardId: string;
   columnId: string;
   title: string;
   description: string;
-  descriptionDraft: string | null;
+  descriptionDraft: string;
   expiryDate: string | null;
-  priorityId: string | null;
+  priority: string | null;
   priorityOrder: number;
   notifyDaysBefore: number;
-  createdAt: string;
-  updatedAt: string;
+  createdAt?: string;
+  updatedAt?: string;
 }
 
-export interface TicketState {
+export interface TicketsState {
   tickets: Record<string, Ticket>;
   loading: boolean;
   error: string | null;
 }
-
-export type TicketCreatePayload = Pick<Ticket,
-  'boardId' | 'columnId' | 'title' | 'description' |
-  'expiryDate' | 'priorityId' | 'notifyDaysBefore'
->;
-
-export type TicketUpdatePayload = 
-  Partial<Omit<Ticket, 'id' | 'boardId' | 'createdAt'>> & { id: string };

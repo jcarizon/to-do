@@ -4,8 +4,8 @@ export interface Column {
   title: string;
   color: string;
   order: number;
-  createdAt: string;
-  updatedAt: string;
+  createdAt?: string;
+  updatedAt?: string;
 }
 
 export interface Board {
@@ -13,8 +13,8 @@ export interface Board {
   uid: string;
   title: string;
   columnOrder: string[];
-  createdAt: string;
-  updatedAt: string;
+  createdAt?: string;
+  updatedAt?: string;
 }
 
 export interface BoardState {

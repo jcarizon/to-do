@@ -1,7 +1,7 @@
 import { LabelHTMLAttributes } from 'react';
 import { LabelProps } from './types';
 
-export function Label({ required, children, className = '', ...props }: LabelProps) {
+export const Label = ({ required, children, className = '', ...props }: LabelProps) => {
   return (
     <label
       className={['block text-sm font-medium text-gray-700', className].filter(Boolean).join(' ')}
