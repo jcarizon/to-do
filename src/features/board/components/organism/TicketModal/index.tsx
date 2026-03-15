@@ -11,6 +11,7 @@ import { DraftIndicator } from '@/features/board/components/atoms';
 import { PrioritySelector } from '@/features/board/components/molecules';
 import { TicketModalProps } from './types';
 import { useTicketModal } from './useTicketModal';
+import { formatDate } from '@/lib/utils/formatDate';
 
 export function TicketModal({
   ticket,
@@ -155,9 +156,9 @@ export function TicketModal({
         </div>
 
         <div className="text-[10px] text-zinc-600 space-y-0.5 pt-1 border-t border-zinc-800">
-          <p>Created: {new Date(ticket.createdAt).toLocaleString()}</p>
+          <p>Created: {formatDate(ticket.createdAt)}</p>
           {ticket.updatedAt && (
-            <p>Updated: {new Date(ticket.updatedAt).toLocaleString()}</p>
+            <p>Updated: {formatDate(ticket.updatedAt)}</p>
           )}
         </div>
 
