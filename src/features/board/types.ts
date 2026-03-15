@@ -1,3 +1,5 @@
+import { Priority } from "../tickets/types";
+
 export interface Column {
   id: string;
   boardId: string;
@@ -13,6 +15,7 @@ export interface Board {
   uid: string;
   title: string;
   columnOrder: string[];
+  priorities?: Priority[];
   createdAt?: string;
   updatedAt?: string;
 }

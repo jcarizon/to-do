@@ -11,7 +11,7 @@ const initialState: TicketsState = {
 export const loadTickets = createAsyncThunk(
   'tickets/loadTickets',
   async ({ uid, boardId }: { uid: string; boardId: string }) => {
-    return await fetchTickets(uid, boardId);
+    return await fetchTickets({ uid, boardId });
   }
 );
 
@@ -20,7 +20,7 @@ export const addTicket = createAsyncThunk(
   async ({ uid, boardId, data }: { uid: string; boardId: string; data: Omit<Ticket, 'id'> }) => {
     const ticketId = nanoid();
     const ticket: Ticket = { ...data, id: ticketId };
-    await createTicket(uid, boardId, ticketId, ticket);
+    await createTicket({ uid, boardId, ticketId, data: ticket });
     return ticket;
   }
 );
@@ -30,7 +30,7 @@ export const editTicket = createAsyncThunk(
   async ({ uid, boardId, ticketId, changes }: {
     uid: string; boardId: string; ticketId: string; changes: Partial<Ticket>
   }) => {
-    await updateTicket(uid, boardId, ticketId, changes);
+    await updateTicket({ uid, boardId, ticketId, data: changes });
     return { ticketId, changes };
   }
 );
@@ -38,7 +38,7 @@ export const editTicket = createAsyncThunk(
 export const removeTicket = createAsyncThunk(
   'tickets/removeTicket',
   async ({ uid, boardId, ticketId }: { uid: string; boardId: string; ticketId: string }) => {
-    await deleteTicket(uid, boardId, ticketId);
+    await deleteTicket({ uid, boardId, ticketId });
     return ticketId;
   }
 );
@@ -46,7 +46,7 @@ export const removeTicket = createAsyncThunk(
 export const saveDraft = createAsyncThunk(
   'tickets/saveDraft',
   async ({ uid, boardId, ticketId, draft }: { uid: string; boardId: string; ticketId: string; draft: string }) => {
-    await updateTicket(uid, boardId, ticketId, { descriptionDraft: draft });
+    await updateTicket({ uid, boardId, ticketId, data: { descriptionDraft: draft } });
     return { ticketId, draft };
   }
 );

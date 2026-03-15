@@ -47,7 +47,7 @@ export const registerUser = createAsyncThunk(
         password
       );
       await updateProfile(credential.user, { displayName });
-      await createUserDocument(credential.user.uid, { email, displayName });
+      await createUserDocument({ uid: credential.user.uid, data: { email, displayName } });
       return {
         uid: credential.user.uid,
         email: credential.user.email,

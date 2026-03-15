@@ -7,11 +7,15 @@ export async function writeBoardEvent(
   type: string,
   description: string
 ) {
-  await appendBoardHistoryEvent(uid, boardId, {
-    id: nanoid(),
-    type,
-    description,
-    timestamp: new Date().toISOString(),
+  await appendBoardHistoryEvent({
+    uid,
+    boardId,
+    event: {
+      id: nanoid(),
+      type,
+      description,
+      timestamp: new Date().toISOString(),
+    },
   });
 }
 
@@ -23,12 +27,17 @@ export async function writeTicketEvent(
   oldValue: string,
   newValue: string
 ) {
-  await appendTicketHistoryEvent(uid, boardId, ticketId, {
-    id: nanoid(),
+  await appendTicketHistoryEvent({
+    uid,
+    boardId,
     ticketId,
-    field,
-    oldValue,
-    newValue,
-    timestamp: new Date().toISOString(),
+    event: {
+      id: nanoid(),
+      ticketId,
+      field,
+      oldValue,
+      newValue,
+      timestamp: new Date().toISOString(),
+    },
   });
 }

@@ -1,5 +1,12 @@
-import { createColumn, deleteColumn, fetchBoard, fetchColumns, updateColumnOrder } from "@/lib/firebase/firestore";
-import { createAsyncThunk, createSlice, nanoid, PayloadAction } from "@reduxjs/toolkit";
+import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
+import {
+  fetchBoard,
+  fetchColumns,
+  createBoard,
+  createColumn,
+  deleteColumn,
+  updateColumnOrder,
+} from "@/lib/firebase/firestore";
 import { Board, BoardState, Column } from "../types";
 
 const initialState: BoardState = {
@@ -10,70 +17,136 @@ const initialState: BoardState = {
 };
 
 export const loadBoard = createAsyncThunk(
-  'board/loadBoard',
+  "board/loadBoard",
   async ({ uid, boardId }: { uid: string; boardId: string }) => {
-    const [board, columns] = await Promise.all([
-      fetchBoard(uid, boardId),
-      fetchColumns(uid, boardId),
+    const [rawBoard, rawColumns] = await Promise.all([
+      fetchBoard({ uid, boardId }),
+      fetchColumns({ uid, boardId }),
     ]);
-    return { board, columns };
+    return {
+      board: rawBoard as Board | null,
+      columns: rawColumns as Column[],
+    };
+  }
+);
+
+export const initBoard = createAsyncThunk(
+  "board/initBoard",
+  async ({
+    uid,
+    boardId,
+    title,
+  }: {
+    uid: string;
+    boardId: string;
+    title: string;
+  }) => {
+    await createBoard({ uid, boardId, title });
+    const raw = await fetchBoard({ uid, boardId });
+    return raw as Board;
   }
 );
 
 export const addColumn = createAsyncThunk(
-  'board/addColumn',
-  async ({ uid, boardId, title, color }: { uid: string; boardId: string; title: string; color: string }, { getState }) => {
-    const columnId = nanoid();
-    const state = (getState() as any).board;
-    const order = Object.keys(state.columns).length;
-    const column: Column = { id: columnId, boardId, title, color, order };
-    await createColumn(uid, boardId, columnId, column);
-    const newOrder = [...(state.board?.columnOrder ?? []), columnId];
-    await updateColumnOrder(uid, boardId, newOrder);
-    return { column, newOrder };
+  "board/addColumn",
+  async ({
+    uid,
+    boardId,
+    title,
+    color,
+    columnOrder,
+  }: {
+    uid: string;
+    boardId: string;
+    title: string;
+    color: string;
+    columnOrder: string[];
+  }) => {
+    const columnId = crypto.randomUUID();
+    const order = columnOrder.length;
+    const data: Omit<Column, "id"> = { boardId, title, color, order };
+    await createColumn({ uid, boardId, columnId, data });
+    const newOrder = [...columnOrder, columnId];
+    await updateColumnOrder({ uid, boardId, columnOrder: newOrder });
+    return { column: { id: columnId, ...data } as Column, newOrder };
   }
 );
 
 export const removeColumn = createAsyncThunk(
-  'board/removeColumn',
-  async ({ uid, boardId, columnId }: { uid: string; boardId: string; columnId: string }, { getState }) => {
-    await deleteColumn(uid, boardId, columnId);
-    const state = (getState() as any).board;
-    const newOrder = (state.board?.columnOrder ?? []).filter((id: string) => id !== columnId);
-    await updateColumnOrder(uid, boardId, newOrder);
+  "board/removeColumn",
+  async ({
+    uid,
+    boardId,
+    columnId,
+    columnOrder,
+  }: {
+    uid: string;
+    boardId: string;
+    columnId: string;
+    columnOrder: string[];
+  }) => {
+    await deleteColumn({ uid, boardId, columnId });
+    const newOrder = columnOrder.filter((id) => id !== columnId);
+    await updateColumnOrder({ uid, boardId, columnOrder: newOrder });
     return { columnId, newOrder };
   }
 );
 
 export const reorderColumns = createAsyncThunk(
-  'board/reorderColumns',
-  async ({ uid, boardId, columnOrder }: { uid: string; boardId: string; columnOrder: string[] }) => {
-    await updateColumnOrder(uid, boardId, columnOrder);
+  "board/reorderColumns",
+  async ({
+    uid,
+    boardId,
+    columnOrder,
+  }: {
+    uid: string;
+    boardId: string;
+    columnOrder: string[];
+  }) => {
+    await updateColumnOrder({ uid, boardId, columnOrder });
     return columnOrder;
   }
 );
 
 const boardSlice = createSlice({
-  name: 'board',
+  name: "board",
   initialState,
   reducers: {
-    setColumnOrder(state, action: PayloadAction<string[]>) {
+    setBoard(state, action) {
+      state.board = action.payload;
+    },
+    setColumns(state, action) {
+      state.columns = action.payload;
+    },
+    setLoading(state, action) {
+      state.loading = action.payload;
+    },
+    clearError(state) {
+      state.error = null;
+    },
+    reorderColumnsOptimistic(state, action) {
       if (state.board) state.board.columnOrder = action.payload;
     },
   },
   extraReducers: (builder) => {
     builder
-      .addCase(loadBoard.pending, (state) => { state.loading = true; })
+      .addCase(loadBoard.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
       .addCase(loadBoard.fulfilled, (state, action) => {
-        state.loading = false;
-        state.board = action.payload.board as Board;
+        state.board = action.payload.board;
         state.columns = Object.fromEntries(
-          action.payload.columns.map((c: any) => [c.id, c])
+          action.payload.columns.map((c) => [c.id, c])
         );
+        state.loading = false;
       })
       .addCase(loadBoard.rejected, (state, action) => {
         state.loading = false;
-        state.error = action.error.message ?? 'Failed to load board';
+        state.error = action.error.message ?? "Failed to load board";
+      })
+      .addCase(initBoard.fulfilled, (state, action) => {
+        state.board = action.payload;
       })
       .addCase(addColumn.fulfilled, (state, action) => {
         const { column, newOrder } = action.payload;
@@ -81,8 +154,9 @@ const boardSlice = createSlice({
         if (state.board) state.board.columnOrder = newOrder;
       })
       .addCase(removeColumn.fulfilled, (state, action) => {
-        delete state.columns[action.payload.columnId];
-        if (state.board) state.board.columnOrder = action.payload.newOrder;
+        const { columnId, newOrder } = action.payload;
+        delete state.columns[columnId];
+        if (state.board) state.board.columnOrder = newOrder;
       })
       .addCase(reorderColumns.fulfilled, (state, action) => {
         if (state.board) state.board.columnOrder = action.payload;
@@ -90,5 +164,11 @@ const boardSlice = createSlice({
   },
 });
 
-export const { setColumnOrder } = boardSlice.actions;
+export const {
+  setBoard,
+  setColumns,
+  setLoading,
+  clearError,
+  reorderColumnsOptimistic,
+} = boardSlice.actions;
 export default boardSlice.reducer;
