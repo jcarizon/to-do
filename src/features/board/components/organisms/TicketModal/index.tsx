@@ -1,10 +1,5 @@
 'use client';
 
-import { useCallback, useEffect, useRef, useState } from 'react';
-import { useAppDispatch } from '@/store/hooks';
-import { editTicket, removeTicket, saveDraft } from '@/features/tickets/store/ticketsSlice';
-import { appendTicketEvent } from '@/features/history/store/historySlice';
-import type { Ticket } from '@/features/tickets/types';
 import { Button, Input, Label } from '@/components/ui/atoms';
 import { ModalShell } from '@/components/ui/molecules';
 import { DraftIndicator } from '@/features/board/components/atoms';

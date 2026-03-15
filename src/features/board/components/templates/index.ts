@@ -1,0 +1,1 @@
+export { BoardTemplate } from './BoardTemplate';
