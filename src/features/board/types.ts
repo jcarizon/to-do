@@ -1,16 +1,20 @@
-export interface Board {
-  id: string;
-  title: string;
-  createdAt: string;
-  columnOrder: string[];
-}
-
 export interface Column {
   id: string;
   boardId: string;
   title: string;
   color: string;
   order: number;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface Board {
+  id: string;
+  uid: string;
+  title: string;
+  columnOrder: string[];
+  createdAt: string;
+  updatedAt: string;
 }
 
 export interface BoardState {
