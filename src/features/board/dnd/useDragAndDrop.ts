@@ -1,5 +1,5 @@
 import { useState, useCallback } from 'react';
-import { DragState } from './types';
+import { DragState, DragType } from './types';
 
 const initialState: DragState = {
   item: null,

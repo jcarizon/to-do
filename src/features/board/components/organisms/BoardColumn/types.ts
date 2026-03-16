@@ -10,15 +10,9 @@ interface BoardColumnProps {
   columnOrder: string[];
   onOpenTicket: (ticket: Ticket) => void;
   onAddTicket: (columnId: string) => void;
-
-  // Drag and Drop Props
-  isDragging?: boolean;
-  isDropTarget?: boolean;
-  onDragStart?: (e: React.DragEvent) => void;
-  onDragOver?: (e: React.DragEvent) => void;
-  onDragLeave?: (e: React.DragEvent) => void;
-  onDrop?: (e: React.DragEvent) => void;
-  onDragEnd?: (e: React.DragEvent) => void;
+  onColumnReorder: (draggedId: string, targetId: string) => void;
+  onTicketMove: (ticketId: string, targetColumnId: string) => void;
+  onTicketReorder: (draggedId: string, targetId: string, columnId: string) => void;
 }
 
 export type { BoardColumnProps };
