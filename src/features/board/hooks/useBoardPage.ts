@@ -15,11 +15,22 @@ import type { Board, Column } from '@/features/board/types';
 import type { Ticket, Priority } from '@/features/tickets/types';
 import type { DragPayload } from '@/features/board/types';
 import { useExpiryScanner } from '@/features/notifications/hooks/useExpiryScanner';
+import { useRouter } from 'next/navigation';
 
 export function useBoardPage() {
   const dispatch = useAppDispatch();
   const { user } = useAuth();
-  const { board, columns, tickets, loading, error, uid, boardId } = useBoard();
+  const router = useRouter();
+
+  const { 
+    board, 
+    columns, 
+    tickets, 
+    loading, 
+    error, 
+    uid, 
+    boardId 
+  } = useBoard();
 
   const [activeTicket, setActiveTicket] = useState<Ticket | null>(null);
   const [showAddCategory, setShowAddCategory] = useState(false);
@@ -101,7 +112,11 @@ export function useBoardPage() {
     });
   };
 
-  const handleLogout = () => dispatch(logoutUser());
+  const handleLogout = async () => {
+    await dispatch(logoutUser());
+    router.push("/login");
+  };
+  
   const handleOpenTicket = (ticket: Ticket) => setActiveTicket(ticket);
   const handleCloseTicket = () => setActiveTicket(null);
   const handleOpenAddCategory = () => setShowAddCategory(true);

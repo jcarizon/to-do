@@ -13,7 +13,7 @@ export const useBoardColumn = ({
 }: BoardColumnProps) => {
   const dispatch = useAppDispatch();
   const inputRef = useRef<HTMLInputElement>(null);
-  const { dragging } = useDragContext();
+  const { dragging, setDragging } = useDragContext();
 
   const liveTitle = useAppSelector((s) => s.board.columns[column.id]?.title ?? column.title);
 
@@ -48,6 +48,7 @@ export const useBoardColumn = ({
     if (event.dataTransfer.getData('type') !== 'ticket') return;
     const ticketId = event.dataTransfer.getData('ticketId');
     onTicketMove(ticketId, column.id);
+    setDragging(null);
   };
 
   const startRename = () => {
@@ -98,28 +99,14 @@ export const useBoardColumn = ({
   };
 
   return {
-    sorted, 
-    liveTitle, 
-    inputRef,
-    menuOpen, 
-    setMenuOpen, 
-    confirmDelete, 
-    setConfirmDelete, 
-    closeMenu,
-    isRenaming, 
-    renameValue, 
-    setRenameValue, 
-    startRename, 
-    commitRename, 
-    cancelRename,
-    handleDelete,
+    sorted, liveTitle, inputRef,
+    menuOpen, setMenuOpen, confirmDelete, 
+    setConfirmDelete, closeMenu, isRenaming, 
+    renameValue, setRenameValue, startRename, 
+    commitRename, cancelRename, handleDelete,
     // DnD
-    isDraggingThis, 
-    isColumnDragOver,
-    columnDragHandlers,
-    isTicketDragOver, 
-    onColumnTicketDragOver, 
-    onColumnTicketDragLeave, 
+    isDraggingThis, isColumnDragOver, columnDragHandlers,
+    isTicketDragOver, onColumnTicketDragOver, onColumnTicketDragLeave, 
     onColumnTicketDrop,
   };
 };
