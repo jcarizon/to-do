@@ -3,6 +3,7 @@ import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import { BoardColumnProps } from "./types";
 import { removeColumn, updateColumnTitle } from "@/features/board/store/boardSlice";
 import { appendBoardEvent } from "@/features/history/store/historySlice";
+import { writeBoardEvent } from "@/features/history/utils/historyWriter";
 import { useColumnDrag } from "@/features/board/hooks/useColumnDrag";
 import { useDragContext } from "@/features/board/hooks/useDragContext";
 
@@ -35,11 +36,11 @@ export const useBoardColumn = ({
     if ((dragging as { sourceColumnId: string }).sourceColumnId === column.id) return;
     event.dataTransfer.dropEffect = 'move';
     setIsTicketDragOver(true);
-  }
+  };
 
   const onColumnTicketDragLeave = (event: DragEvent<HTMLDivElement>) => {
     if (!event.currentTarget.contains(event.relatedTarget as Node)) setIsTicketDragOver(false);
-  }
+  };
 
   const onColumnTicketDrop = (event: DragEvent<HTMLDivElement>) => {
     event.preventDefault();
@@ -47,61 +48,78 @@ export const useBoardColumn = ({
     if (event.dataTransfer.getData('type') !== 'ticket') return;
     const ticketId = event.dataTransfer.getData('ticketId');
     onTicketMove(ticketId, column.id);
-  }
-  
-  const startRename = () => { 
-    setRenameValue(column.title); 
-    setIsRenaming(true); 
-    setMenuOpen(false); 
-    setTimeout(() => inputRef.current?.select(), 0); 
   };
 
-  const commitRename = async () => { 
-    const renamedTitle = renameValue.trim(); 
-    setIsRenaming(false); 
-    if (!renamedTitle || renamedTitle === column.title) return; 
-    await dispatch(updateColumnTitle({ 
-      uid, 
-      boardId, 
-      columnId: column.id, 
-      title: renamedTitle
-    })); 
+  const startRename = () => {
+    setRenameValue(column.title);
+    setIsRenaming(true);
+    setMenuOpen(false);
+    setTimeout(() => inputRef.current?.select(), 0);
   };
 
-  const cancelRename = () => { 
-    setRenameValue(column.title); 
-    setIsRenaming(false); 
+  const commitRename = async () => {
+    const renamedTitle = renameValue.trim();
+    setIsRenaming(false);
+    if (!renamedTitle || renamedTitle === column.title) return;
+    await dispatch(updateColumnTitle({
+      uid,
+      boardId,
+      columnId: column.id,
+      title: renamedTitle,
+    }));
+  };
+
+  const cancelRename = () => {
+    setRenameValue(column.title);
+    setIsRenaming(false);
   };
 
   const handleDelete = async () => {
-    await dispatch(removeColumn({ 
-      uid, 
-      boardId, 
-      columnId: column.id, 
-      columnOrder 
+    await dispatch(removeColumn({
+      uid,
+      boardId,
+      columnId: column.id,
+      columnOrder,
     }));
 
-    dispatch(appendBoardEvent({ 
-      id: crypto.randomUUID(), 
-      type: 'COLUMN_DELETED', 
-      description: `Column "${column.title}" was deleted.`, 
-      timestamp: new Date().toISOString() 
-    }));
+    const event = {
+      id: crypto.randomUUID(),
+      type: 'COLUMN_DELETED' as const,
+      description: `Column "${column.title}" was deleted.`,
+      timestamp: new Date().toISOString(),
+    };
+    dispatch(appendBoardEvent(event));
+    writeBoardEvent(uid, boardId, event.type, event.description);
   };
 
-  const closeMenu = () => { 
-    setMenuOpen(false); 
-    setConfirmDelete(false); 
+  const closeMenu = () => {
+    setMenuOpen(false);
+    setConfirmDelete(false);
   };
 
   return {
-    sorted, liveTitle, inputRef,
-    menuOpen, setMenuOpen, confirmDelete, setConfirmDelete, closeMenu,
-    isRenaming, renameValue, setRenameValue, startRename, commitRename, cancelRename,
+    sorted, 
+    liveTitle, 
+    inputRef,
+    menuOpen, 
+    setMenuOpen, 
+    confirmDelete, 
+    setConfirmDelete, 
+    closeMenu,
+    isRenaming, 
+    renameValue, 
+    setRenameValue, 
+    startRename, 
+    commitRename, 
+    cancelRename,
     handleDelete,
     // DnD
-    isDraggingThis, isColumnDragOver,
+    isDraggingThis, 
+    isColumnDragOver,
     columnDragHandlers,
-    isTicketDragOver, onColumnTicketDragOver, onColumnTicketDragLeave, onColumnTicketDrop,
+    isTicketDragOver, 
+    onColumnTicketDragOver, 
+    onColumnTicketDragLeave, 
+    onColumnTicketDrop,
   };
 };
