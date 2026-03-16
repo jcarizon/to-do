@@ -10,6 +10,9 @@ interface BoardColumnProps {
   columnOrder: string[];
   onOpenTicket: (ticket: Ticket) => void;
   onAddTicket: (columnId: string) => void;
+  onColumnReorder: (draggedId: string, targetId: string) => void;
+  onTicketMove: (ticketId: string, targetColumnId: string) => void;
+  onTicketReorder: (draggedId: string, targetId: string, columnId: string) => void;
 }
 
 export type { BoardColumnProps };

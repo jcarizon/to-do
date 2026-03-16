@@ -27,7 +27,7 @@ interface EditTicketArg {
   uid: string;
   boardId: string;
   ticketId: string;
-  changes: Partial<Ticket>;
+  changes: Partial<Ticket> | object;
 }
 
 interface RemoveTicketArg {
