@@ -9,16 +9,28 @@ import { logoutUser } from '@/features/auth/store/authSlice';
 import { addColumn, reorderColumnsOptimistic, reorderColumns } from '@/features/board/store/boardSlice';
 import { editTicket, moveTicketOptimistic, reorderTicketPriorityOptimistic } from '@/features/tickets/store/ticketsSlice';
 import { appendBoardEvent } from '@/features/history/store/historySlice';
+import { writeBoardEvent } from '@/features/history/utils/historyWriter';
 import { db } from '@/lib/firebase/firebase';
 import type { Board, Column } from '@/features/board/types';
 import type { Ticket, Priority } from '@/features/tickets/types';
 import type { DragPayload } from '@/features/board/types';
 import { useExpiryScanner } from '@/features/notifications/hooks/useExpiryScanner';
+import { useRouter } from 'next/navigation';
 
 export function useBoardPage() {
   const dispatch = useAppDispatch();
   const { user } = useAuth();
-  const { board, columns, tickets, loading, error, uid, boardId } = useBoard();
+  const router = useRouter();
+
+  const { 
+    board, 
+    columns, 
+    tickets, 
+    loading, 
+    error, 
+    uid, 
+    boardId 
+  } = useBoard();
 
   const [activeTicket, setActiveTicket] = useState<Ticket | null>(null);
   const [showAddCategory, setShowAddCategory] = useState(false);
@@ -47,18 +59,36 @@ export function useBoardPage() {
     const next = [...order];
     next.splice(from, 1);
     next.splice(to, 0, draggedId);
-    
+
     dispatch(reorderColumnsOptimistic(next));
     dispatch(reorderColumns({ uid, boardId, columnOrder: next }));
-    dispatch(appendBoardEvent({ id: crypto.randomUUID(), type: 'COLUMN_REORDERED', description: 'Columns reordered.', timestamp: new Date().toISOString() }));
+
+    const event = {
+      id: crypto.randomUUID(),
+      type: 'COLUMN_REORDERED' as const,
+      description: 'Columns reordered.',
+      timestamp: new Date().toISOString(),
+    };
+    dispatch(appendBoardEvent(event));
+    writeBoardEvent(uid, boardId, event.type, event.description);
   };
 
   const handleTicketMove = (ticketId: string, targetColumnId: string) => {
     const ticket = tickets[ticketId];
     if (!ticket || ticket.columnId === targetColumnId) return;
+
     dispatch(moveTicketOptimistic({ ticketId, columnId: targetColumnId }));
     dispatch(editTicket({ uid, boardId, ticketId, changes: { columnId: targetColumnId } }));
-    dispatch(appendBoardEvent({ id: crypto.randomUUID(), type: 'TICKET_MOVED', description: `"${ticket.title}" moved to ${columns[targetColumnId]?.title ?? targetColumnId}.`, timestamp: new Date().toISOString() }));
+
+    const description = `"${ticket.title}" moved to ${columns[targetColumnId]?.title ?? targetColumnId}.`;
+    const event = {
+      id: crypto.randomUUID(),
+      type: 'TICKET_MOVED' as const,
+      description,
+      timestamp: new Date().toISOString(),
+    };
+    dispatch(appendBoardEvent(event));
+    writeBoardEvent(uid, boardId, event.type, event.description);
   };
 
   const handleTicketReorder = (draggedId: string, targetId: string, columnId: string) => {
@@ -82,7 +112,11 @@ export function useBoardPage() {
     });
   };
 
-  const handleLogout = () => dispatch(logoutUser());
+  const handleLogout = async () => {
+    await dispatch(logoutUser());
+    router.push("/login");
+  };
+  
   const handleOpenTicket = (ticket: Ticket) => setActiveTicket(ticket);
   const handleCloseTicket = () => setActiveTicket(null);
   const handleOpenAddCategory = () => setShowAddCategory(true);
@@ -95,61 +129,63 @@ export function useBoardPage() {
   };
 
   const handleAddColumn = async (title: string, color: string) => {
-    await dispatch(addColumn({ 
-      uid, 
-      boardId, 
-      title, 
-      color, 
-      columnOrder: board?.columnOrder ?? [] 
+    await dispatch(addColumn({
+      uid,
+      boardId,
+      title,
+      color,
+      columnOrder: board?.columnOrder ?? [],
     }));
 
-    dispatch(appendBoardEvent({ 
-      id: crypto.randomUUID(), 
-      type: 'COLUMN_CREATED', 
-      description: `Column "${title}" was created.`, 
-      timestamp: new Date().toISOString() 
-    }));
+    const event = {
+      id: crypto.randomUUID(),
+      type: 'COLUMN_CREATED' as const,
+      description: `Column "${title}" was created.`,
+      timestamp: new Date().toISOString(),
+    };
+    dispatch(appendBoardEvent(event));
+    writeBoardEvent(uid, boardId, event.type, event.description);
   };
 
   const dragContextValue = useMemo(() => ({ dragging, setDragging }), [dragging]);
 
-  useExpiryScanner({ 
-    tickets, 
-    enabled: !loading && Object.keys(tickets).length > 0 
+  useExpiryScanner({
+    tickets,
+    enabled: !loading && Object.keys(tickets).length > 0,
   });
 
   const handleOpenHistory  = () => setShowHistory(true);
   const handleCloseHistory = () => setShowHistory(false);
 
   return {
-    user, 
+    user,
     handleLogout,
-    board, 
-    loading, 
-    error, 
-    uid, 
+    board,
+    loading,
+    error,
+    uid,
     boardId,
-    orderedColumns, 
-    ticketsForColumn, 
+    orderedColumns,
+    ticketsForColumn,
     priorities,
-    activeTicket, 
-    handleOpenTicket, 
+    activeTicket,
+    handleOpenTicket,
     handleCloseTicket,
-    showAddCategory, 
-    handleOpenAddCategory, 
+    showAddCategory,
+    handleOpenAddCategory,
     handleCloseAddCategory,
-    addTicketColumnId, 
+    addTicketColumnId,
     setAddTicketColumnId,
-    handleUpdatePriorities, 
+    handleUpdatePriorities,
     handleAddColumn,
     // DnD
     dragContextValue,
-    handleColumnReorder, 
-    handleTicketMove, 
+    handleColumnReorder,
+    handleTicketMove,
     handleTicketReorder,
     // History
-    showHistory, 
-    handleOpenHistory, 
+    showHistory,
+    handleOpenHistory,
     handleCloseHistory,
   };
 }

@@ -12,13 +12,21 @@ export function BoardColumn({
 }: BoardColumnProps) {
   const {
     sorted, liveTitle, inputRef,
-    menuOpen, setMenuOpen, confirmDelete, setConfirmDelete, closeMenu,
-    isRenaming, renameValue, setRenameValue, startRename, commitRename, cancelRename,
-    handleDelete,
-    isDraggingThis, isColumnDragOver,
-    columnDragHandlers,
-    isTicketDragOver, onColumnTicketDragOver, onColumnTicketDragLeave, onColumnTicketDrop,
-  } = useBoardColumn({ column, tickets, priorities, uid, boardId, columnOrder, onOpenTicket, onAddTicket, onColumnReorder, onTicketMove, onTicketReorder });
+    menuOpen, setMenuOpen, confirmDelete, 
+    setConfirmDelete, closeMenu, isRenaming, 
+    renameValue, setRenameValue, startRename, 
+    commitRename, cancelRename, handleDelete,
+    isDraggingThis, isColumnDragOver, columnDragHandlers,
+    isTicketDragOver, onColumnTicketDragOver, onColumnTicketDragLeave, 
+    onColumnTicketDrop,
+  } = useBoardColumn({ 
+    column, tickets, priorities, 
+    uid, boardId, columnOrder, 
+    onOpenTicket, onAddTicket, onColumnReorder, 
+    onTicketMove, onTicketReorder 
+  });
+
+  const hasTickets = tickets.length > 0;
 
   return (
     <div
@@ -26,7 +34,6 @@ export function BoardColumn({
       draggable
       {...columnDragHandlers}
     >
-      {/* Column drop indicator */}
       <DropIndicator axis="horizontal" visible={isColumnDragOver} />
 
       <div className={[
@@ -34,7 +41,6 @@ export function BoardColumn({
         isDraggingThis ? "opacity-40" : "opacity-100",
       ].join(" ")}>
 
-        {/* Header */}
         <div className="flex items-center gap-2 mb-2 px-1">
           <span className="w-2.5 h-2.5 rounded-full flex-shrink-0" style={{ backgroundColor: column.color }} />
 
@@ -74,13 +80,20 @@ export function BoardColumn({
                     Rename column
                   </button>
                   <div className="my-1 border-t border-zinc-700" />
-                  {!confirmDelete ? (
+
+                  {hasTickets ? (
+                    <div className="px-3 py-2">
+                      <p className="text-[10px] text-zinc-500 leading-snug">
+                        Move or delete all {tickets.length} ticket{tickets.length !== 1 ? 's' : ''} before deleting this column.
+                      </p>
+                    </div>
+                  ) : !confirmDelete ? (
                     <button type="button" onClick={() => setConfirmDelete(true)} className="w-full text-left px-3 py-2 text-xs text-red-400 hover:bg-zinc-700 transition-colors">
                       Delete column
                     </button>
                   ) : (
                     <div className="px-3 py-2 space-y-2">
-                      <p className="text-[10px] text-zinc-500 leading-snug">Delete this column? Tickets will remain.</p>
+                      <p className="text-[10px] text-zinc-500 leading-snug">Delete this column? This cannot be undone.</p>
                       <div className="flex gap-2">
                         <Button variant="danger" size="sm" onClick={handleDelete}>Confirm</Button>
                         <Button variant="ghost" size="sm" onClick={() => setConfirmDelete(false)}>Cancel</Button>
@@ -95,7 +108,6 @@ export function BoardColumn({
 
         <div className="h-0.5 rounded-full mb-3 opacity-50" style={{ backgroundColor: column.color }} />
 
-        {/* Ticket list — also acts as drop zone */}
         <div
           className={[
             "flex-1 space-y-2 min-h-[60px] rounded-lg transition-colors",
