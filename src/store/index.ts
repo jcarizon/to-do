@@ -3,6 +3,7 @@ import authReducer from "@/features/auth/store/authSlice";
 import boardReducer from '@/features/board/store/boardSlice';
 import ticketsReducer from '@/features/tickets/store/ticketsSlice';
 import historyReducer from '@/features/history/store/historySlice';
+import notificationsReducer from '@/features/notifications/store/notificationsSlice';
 
 export const store = configureStore({
   reducer: {
@@ -10,6 +11,7 @@ export const store = configureStore({
     board: boardReducer,
     tickets: ticketsReducer,
     history: historyReducer,
+    notifications: notificationsReducer,
   },
 });
 

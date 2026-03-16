@@ -13,6 +13,7 @@ import { db } from '@/lib/firebase/firebase';
 import type { Board, Column } from '@/features/board/types';
 import type { Ticket, Priority } from '@/features/tickets/types';
 import type { DragPayload } from '@/features/board/types';
+import { useExpiryScanner } from '@/features/notifications/hooks/useExpiryScanner';
 
 export function useBoardPage() {
   const dispatch = useAppDispatch();
@@ -22,6 +23,7 @@ export function useBoardPage() {
   const [activeTicket, setActiveTicket] = useState<Ticket | null>(null);
   const [showAddCategory, setShowAddCategory] = useState(false);
   const [addTicketColumnId, setAddTicketColumnId] = useState<string | null>(null);
+  const [showHistory, setShowHistory] = useState(false);
 
   const [dragging, setDragging] = useState<DragPayload | null>(null);
 
@@ -111,16 +113,43 @@ export function useBoardPage() {
 
   const dragContextValue = useMemo(() => ({ dragging, setDragging }), [dragging]);
 
+  useExpiryScanner({ 
+    tickets, 
+    enabled: !loading && Object.keys(tickets).length > 0 
+  });
+
+  const handleOpenHistory  = () => setShowHistory(true);
+  const handleCloseHistory = () => setShowHistory(false);
+
   return {
-    user, handleLogout,
-    board, loading, error, uid, boardId,
-    orderedColumns, ticketsForColumn, priorities,
-    activeTicket, handleOpenTicket, handleCloseTicket,
-    showAddCategory, handleOpenAddCategory, handleCloseAddCategory,
-    addTicketColumnId, setAddTicketColumnId,
-    handleUpdatePriorities, handleAddColumn,
+    user, 
+    handleLogout,
+    board, 
+    loading, 
+    error, 
+    uid, 
+    boardId,
+    orderedColumns, 
+    ticketsForColumn, 
+    priorities,
+    activeTicket, 
+    handleOpenTicket, 
+    handleCloseTicket,
+    showAddCategory, 
+    handleOpenAddCategory, 
+    handleCloseAddCategory,
+    addTicketColumnId, 
+    setAddTicketColumnId,
+    handleUpdatePriorities, 
+    handleAddColumn,
     // DnD
     dragContextValue,
-    handleColumnReorder, handleTicketMove, handleTicketReorder,
+    handleColumnReorder, 
+    handleTicketMove, 
+    handleTicketReorder,
+    // History
+    showHistory, 
+    handleOpenHistory, 
+    handleCloseHistory,
   };
 }
