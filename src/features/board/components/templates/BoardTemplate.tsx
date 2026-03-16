@@ -4,18 +4,38 @@ import { Button, Spinner } from '@/components/ui/atoms';
 import { AddCategoryModal, AddTicketModal, BoardColumn, TicketModal } from '@/features/board/components/organisms';
 import { useBoardPage } from '@/features/board/hooks/useBoardPage';
 import { DragContext } from '@/features/board/hooks/useDragContext';
+import { ToastContainer } from '@/features/notifications/components/organisms';
+import { HistoryPanel }   from '@/features/history/components/organisms';
+
 
 export function BoardTemplate() {
   const {
-    user, handleLogout,
-    board, loading,
-    orderedColumns, ticketsForColumn, priorities,
-    activeTicket, handleOpenTicket, handleCloseTicket,
-    showAddCategory, handleOpenAddCategory, handleCloseAddCategory,
-    handleUpdatePriorities, uid, boardId, handleAddColumn,
-    addTicketColumnId, setAddTicketColumnId,
+    user, 
+    handleLogout,
+    board, 
+    loading,
+    orderedColumns, 
+    ticketsForColumn, 
+    priorities,
+    activeTicket, 
+    handleOpenTicket, 
+    handleCloseTicket,
+    showAddCategory, 
+    handleOpenAddCategory, 
+    handleCloseAddCategory,
+    handleUpdatePriorities, 
+    uid, 
+    boardId, 
+    handleAddColumn,
+    addTicketColumnId, 
+    setAddTicketColumnId,
     dragContextValue,
-    handleColumnReorder, handleTicketMove, handleTicketReorder,
+    handleColumnReorder, 
+    handleTicketMove, 
+    handleTicketReorder,
+    showHistory, 
+    handleOpenHistory, 
+    handleCloseHistory
   } = useBoardPage();
 
   if (loading) {
@@ -40,6 +60,7 @@ export function BoardTemplate() {
           <div className="flex items-center gap-4">
             {user && <span className="text-xs text-zinc-600 hidden sm:block">{user.displayName ?? user.email}</span>}
             <Button variant="ghost" size="sm" onClick={handleLogout}>Sign out</Button>
+            <Button variant="ghost" size="sm" onClick={handleOpenHistory}>History</Button>
           </div>
         </header>
 
@@ -76,15 +97,43 @@ export function BoardTemplate() {
         </main>
 
         {activeTicket && (
-          <TicketModal ticket={activeTicket} priorities={priorities} uid={uid} boardId={boardId} onClose={handleCloseTicket} onUpdatePriorities={handleUpdatePriorities} />
+          <TicketModal 
+            ticket={activeTicket} 
+            priorities={priorities} 
+            uid={uid} 
+            boardId={boardId} 
+            onClose={handleCloseTicket} 
+            onUpdatePriorities={handleUpdatePriorities} 
+          />
         )}
+
         {showAddCategory && (
-          <AddCategoryModal onClose={handleCloseAddCategory} onSubmit={handleAddColumn} />
+          <AddCategoryModal 
+            onClose={handleCloseAddCategory} 
+            onSubmit={handleAddColumn} 
+          />
         )}
+
         {addTicketColumnId && (
-          <AddTicketModal uid={uid} boardId={boardId} columnId={addTicketColumnId} ticketCount={ticketsForColumn(addTicketColumnId).length} onClose={() => setAddTicketColumnId(null)} />
+          <AddTicketModal 
+            uid={uid} 
+            boardId={boardId} 
+            columnId={addTicketColumnId} 
+            ticketCount={ticketsForColumn(addTicketColumnId).length} 
+            onClose={() => setAddTicketColumnId(null)} 
+          />
+        )}
+
+        {showHistory && (
+          <HistoryPanel 
+            uid={uid} 
+            boardId={boardId} 
+            onClose={handleCloseHistory} 
+          />
         )}
       </div>
+
+      <ToastContainer />
     </DragContext.Provider>
   );
 }
