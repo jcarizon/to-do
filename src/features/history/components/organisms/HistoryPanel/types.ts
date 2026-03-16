@@ -4,8 +4,8 @@ interface HistoryPanelProps {
   onClose: () => void;
 }
 
-type HistoryTab = 'board' | 'ticket';
- 
+type HistoryTab = 'all' | 'board' | 'ticket';
+
 interface UseHistoryPanelArgs { uid: string; boardId: string; }
 
 export type { 

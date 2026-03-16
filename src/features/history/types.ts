@@ -1,6 +1,6 @@
 export interface BoardHistoryEvent {
   id: string;
-  type: 'COLUMN_CREATED' | 'COLUMN_DELETED' | 'COLUMN_REORDERED' | 'TICKET_MOVED';
+  type: 'COLUMN_CREATED' | 'COLUMN_DELETED' | 'COLUMN_REORDERED' | 'TICKET_MOVED' | 'TICKET_DELETED';
   description: string;
   timestamp: string;
 }
@@ -19,3 +19,7 @@ export interface HistoryState {
   ticketEvents: Record<string, TicketHistoryEvent[]>;
   loading: boolean;
 }
+
+export type AllHistoryEvent =
+  | ({ kind: 'board' } & BoardHistoryEvent)
+  | ({ kind: 'ticket' } & TicketHistoryEvent);
