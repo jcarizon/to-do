@@ -5,38 +5,42 @@ import { AddCategoryModal, AddTicketModal, BoardColumn, TicketModal } from '@/fe
 import { useBoardPage } from '@/features/board/hooks/useBoardPage';
 import { DragContext } from '@/features/board/hooks/useDragContext';
 import { ToastContainer } from '@/features/notifications/components/organisms';
-import { HistoryPanel }   from '@/features/history/components/organisms';
+import { PushPermissionButton } from '@/features/notifications/components/atoms';
+import { useFcmPush } from '@/features/notifications/hooks/useFcmPush';
+import { HistoryPanel } from '@/features/history/components/organisms';
 
 
 export function BoardTemplate() {
   const {
-    user, 
+    user,
     handleLogout,
-    board, 
+    board,
     loading,
-    orderedColumns, 
-    ticketsForColumn, 
+    orderedColumns,
+    ticketsForColumn,
     priorities,
-    activeTicket, 
-    handleOpenTicket, 
+    activeTicket,
+    handleOpenTicket,
     handleCloseTicket,
-    showAddCategory, 
-    handleOpenAddCategory, 
+    showAddCategory,
+    handleOpenAddCategory,
     handleCloseAddCategory,
-    handleUpdatePriorities, 
-    uid, 
-    boardId, 
+    handleUpdatePriorities,
+    uid,
+    boardId,
     handleAddColumn,
-    addTicketColumnId, 
+    addTicketColumnId,
     setAddTicketColumnId,
     dragContextValue,
-    handleColumnReorder, 
-    handleTicketMove, 
+    handleColumnReorder,
+    handleTicketMove,
     handleTicketReorder,
-    showHistory, 
-    handleOpenHistory, 
-    handleCloseHistory
+    showHistory,
+    handleOpenHistory,
+    handleCloseHistory,
   } = useBoardPage();
+
+  const { permissionStatus, pushEnabled, requestPermission, handleTogglePush } = useFcmPush(uid ?? null);
 
   if (loading) {
     return (
@@ -57,10 +61,17 @@ export function BoardTemplate() {
             <span className="text-zinc-700">·</span>
             <span className="text-sm text-zinc-400">{board?.title ?? 'Board'}</span>
           </div>
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-2">
             {user && <span className="text-xs text-zinc-600 hidden sm:block">{user.displayName ?? user.email}</span>}
-            <Button variant="ghost" size="sm" onClick={handleLogout}>Sign out</Button>
+
+            <PushPermissionButton
+              status={permissionStatus}
+              pushEnabled={pushEnabled}
+              onClick={permissionStatus === 'granted' ? handleTogglePush : requestPermission}
+            />
+
             <Button variant="ghost" size="sm" onClick={handleOpenHistory}>History</Button>
+            <Button variant="ghost" size="sm" onClick={handleLogout}>Sign out</Button>
           </div>
         </header>
 
@@ -97,38 +108,38 @@ export function BoardTemplate() {
         </main>
 
         {activeTicket && (
-          <TicketModal 
-            ticket={activeTicket} 
-            priorities={priorities} 
-            uid={uid} 
-            boardId={boardId} 
-            onClose={handleCloseTicket} 
-            onUpdatePriorities={handleUpdatePriorities} 
+          <TicketModal
+            ticket={activeTicket}
+            priorities={priorities}
+            uid={uid}
+            boardId={boardId}
+            onClose={handleCloseTicket}
+            onUpdatePriorities={handleUpdatePriorities}
           />
         )}
 
         {showAddCategory && (
-          <AddCategoryModal 
-            onClose={handleCloseAddCategory} 
-            onSubmit={handleAddColumn} 
+          <AddCategoryModal
+            onClose={handleCloseAddCategory}
+            onSubmit={handleAddColumn}
           />
         )}
 
         {addTicketColumnId && (
-          <AddTicketModal 
-            uid={uid} 
-            boardId={boardId} 
-            columnId={addTicketColumnId} 
-            ticketCount={ticketsForColumn(addTicketColumnId).length} 
-            onClose={() => setAddTicketColumnId(null)} 
+          <AddTicketModal
+            uid={uid}
+            boardId={boardId}
+            columnId={addTicketColumnId}
+            ticketCount={ticketsForColumn(addTicketColumnId).length}
+            onClose={() => setAddTicketColumnId(null)}
           />
         )}
 
         {showHistory && (
-          <HistoryPanel 
-            uid={uid} 
-            boardId={boardId} 
-            onClose={handleCloseHistory} 
+          <HistoryPanel
+            uid={uid}
+            boardId={boardId}
+            onClose={handleCloseHistory}
           />
         )}
       </div>
