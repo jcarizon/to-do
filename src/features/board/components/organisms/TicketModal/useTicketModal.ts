@@ -1,18 +1,19 @@
-import { useAppDispatch } from "@/store/hooks";
+import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import { TicketModalProps } from "./types";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { editTicket, removeTicket, saveDraft } from "@/features/tickets/store/ticketsSlice";
 import { Ticket } from "@/features/tickets/types";
-import { appendBoardEvent, appendTicketEvent } from "@/features/history/store/historySlice";
+import { appendBoardEvent, appendTicketEvent, loadTicketHistory } from "@/features/history/store/historySlice";
 import { writeBoardEvent } from "@/features/history/utils/historyWriter";
 
-export const useTicketModal = ({ 
+export const useTicketModal = ({
   ticket,
   priorities,
   uid,
   boardId,
   onClose,
-  onUpdatePriorities,} : TicketModalProps) => {
+  onUpdatePriorities,
+}: TicketModalProps) => {
   const debounce = <T extends (...args: Parameters<T>) => void>(
     fn: T,
     ms: number,
@@ -22,10 +23,10 @@ export const useTicketModal = ({
       clearTimeout(timer);
       timer = setTimeout(() => fn(...args), ms);
     };
-  }
+  };
 
   const dispatch = useAppDispatch();
-  
+
   const [title, setTitle] = useState(ticket.title);
   const [description, setDescription] = useState(
     ticket.descriptionDraft || ticket.description,
@@ -36,11 +37,31 @@ export const useTicketModal = ({
   const [isSaving, setIsSaving] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(false);
 
+  const [historyOpen, setHistoryOpen] = useState(false);
+
+  const ticketHistory = useAppSelector(
+    (state) => state.history.ticketEvents[ticket.id] ?? [],
+  );
+
+  const ticketHistoryLoading = useAppSelector(
+    (state) => state.history.loadingTickets[ticket.id],
+  );
+
+  useEffect(() => {
+    if (!historyOpen) return;
+    if (ticketHistoryLoading === true) return; 
+    if (ticketHistory.length > 0) return;  
+    if (ticketHistoryLoading === false) return; 
+    
+    dispatch(loadTicketHistory({ uid, boardId, ticketId: ticket.id }));
+  }, [historyOpen, ticketHistory.length, ticketHistoryLoading, uid, boardId, ticket.id, dispatch]);
+
   const originalRef = useRef({
     title: ticket.title,
     description: ticket.description,
     expiryDate: ticket.expiryDate,
     priority: ticket.priority,
+    notifyDaysBefore: ticket.notifyDaysBefore,
   });
 
   const debouncedSaveDraft = useCallback(
@@ -75,6 +96,7 @@ export const useTicketModal = ({
       ['description', orig.description, description],
       ['expiryDate', orig.expiryDate, expiryDate || null],
       ['priority', orig.priority, priority],
+      ['notifyDaysBefore', String(orig.notifyDaysBefore), String(notifyDaysBefore)],
     ];
     for (const [field, oldValue, newValue] of fields) {
       if (oldValue !== newValue) {
@@ -98,7 +120,6 @@ export const useTicketModal = ({
   const handleDelete = async () => {
     await dispatch(removeTicket({ uid, boardId, ticketId: ticket.id }));
 
-    // Log to board history so the deletion is visible even after the ticket is gone
     const description = `Ticket "${ticket.title}" was deleted.`;
     const event = {
       id: crypto.randomUUID(),
@@ -112,22 +133,20 @@ export const useTicketModal = ({
     onClose();
   };
 
-  return { 
-    debounce, 
-    title, 
-    setTitle, 
-    description, 
-    setDescription, 
-    expiryDate, 
-    setExpiryDate, 
-    priority, 
-    setPriority, 
-    notifyDaysBefore, 
-    setNotifyDaysBefore, 
-    isSaving, 
-    confirmDelete, 
-    setConfirmDelete, 
-    handleSave, 
-    handleDelete 
+  return {
+    debounce,
+    title, setTitle,
+    description, setDescription,
+    expiryDate, setExpiryDate,
+    priority, setPriority,
+    notifyDaysBefore, setNotifyDaysBefore,
+    isSaving,
+    confirmDelete, setConfirmDelete,
+    handleSave,
+    handleDelete,
+    // history
+    historyOpen, setHistoryOpen,
+    ticketHistory,
+    historyLoading: ticketHistoryLoading === true,
   };
 };

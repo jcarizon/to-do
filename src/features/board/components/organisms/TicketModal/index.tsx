@@ -1,9 +1,10 @@
 'use client';
 
-import { Button, Input, Label } from '@/components/ui/atoms';
+import { Button, Input, Label, Spinner } from '@/components/ui/atoms';
 import { ModalShell } from '@/components/ui/molecules';
 import { DraftIndicator } from '@/features/board/components/atoms';
 import { PrioritySelector } from '@/features/board/components/molecules';
+import { TicketHistoryEventRow } from '@/features/history/components/atoms';
 import { TicketModalProps } from './types';
 import { useTicketModal } from './useTicketModal';
 import { formatDate } from '@/lib/utils/formatDate';
@@ -16,22 +17,26 @@ export function TicketModal({
   onClose,
   onUpdatePriorities,
 }: TicketModalProps) {
-  const { 
-    title, 
-    description, 
-    priority, 
-    expiryDate, 
-    notifyDaysBefore, 
-    isSaving, 
-    confirmDelete, 
-    handleSave, 
+  const {
+    title,
+    description,
+    priority,
+    expiryDate,
+    notifyDaysBefore,
+    isSaving,
+    confirmDelete,
+    handleSave,
     handleDelete,
     setTitle,
     setDescription,
     setPriority,
     setExpiryDate,
     setNotifyDaysBefore,
-    setConfirmDelete
+    setConfirmDelete,
+    historyOpen,
+    setHistoryOpen,
+    ticketHistory,
+    historyLoading,
   } = useTicketModal({ ticket, priorities, uid, boardId, onClose, onUpdatePriorities });
 
   const footer = (
@@ -42,11 +47,7 @@ export function TicketModal({
           <Button variant="danger" size="sm" onClick={handleDelete}>
             Confirm
           </Button>
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => setConfirmDelete(false)}
-          >
+          <Button variant="ghost" size="sm" onClick={() => setConfirmDelete(false)}>
             Cancel
           </Button>
         </div>
@@ -150,11 +151,45 @@ export function TicketModal({
           </div>
         </div>
 
+        <div className="border-t border-zinc-800 pt-3">
+          <button
+            type="button"
+            onClick={() => setHistoryOpen((v) => !v)}
+            className="flex items-center justify-between w-full text-left group"
+          >
+            <span className="text-xs font-semibold text-zinc-500 uppercase tracking-wide group-hover:text-zinc-300 transition-colors">
+              Change history
+            </span>
+            <span className="text-zinc-600 group-hover:text-zinc-400 transition-colors text-xs">
+              {historyOpen ? '▲' : '▼'}
+            </span>
+          </button>
+
+          {historyOpen && (
+            <div className="mt-3">
+              {historyLoading && ticketHistory.length === 0 ? (
+                <div className="flex items-center gap-2 py-4 justify-center">
+                  <Spinner size="sm" className="text-zinc-600" />
+                  <span className="text-xs text-zinc-600">Loading…</span>
+                </div>
+              ) : ticketHistory.length === 0 ? (
+                <p className="text-xs text-zinc-600 py-3 text-center">
+                  No changes recorded yet.
+                </p>
+              ) : (
+                <div className="max-h-52 overflow-y-auto pr-1 space-y-0">
+                  {ticketHistory.map((event) => (
+                    <TicketHistoryEventRow key={event.id} event={event} />
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+
         <div className="text-[10px] text-zinc-600 space-y-0.5 pt-1 border-t border-zinc-800">
           <p>Created: {formatDate(ticket.createdAt)}</p>
-          {ticket.updatedAt && (
-            <p>Updated: {formatDate(ticket.updatedAt)}</p>
-          )}
+          {ticket.updatedAt && <p>Updated: {formatDate(ticket.updatedAt)}</p>}
         </div>
 
       </div>

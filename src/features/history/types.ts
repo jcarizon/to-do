@@ -17,6 +17,7 @@ export interface TicketHistoryEvent {
 export interface HistoryState {
   boardEvents: BoardHistoryEvent[];
   ticketEvents: Record<string, TicketHistoryEvent[]>;
+  loadingTickets: Record<string, boolean>;
   loading: boolean;
 }
 

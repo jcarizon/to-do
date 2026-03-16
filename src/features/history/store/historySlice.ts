@@ -5,6 +5,7 @@ import { HistoryState } from '../types';
 const initialState: HistoryState = {
   boardEvents: [],
   ticketEvents: {},
+  loadingTickets: {},
   loading: false,
 };
 
@@ -38,16 +39,31 @@ const historySlice = createSlice({
   },
   extraReducers: (builder) => {
     builder
+      .addCase(loadBoardHistory.pending, (state) => {
+        state.loading = true;
+      })
       .addCase(loadBoardHistory.fulfilled, (state, action) => {
+        state.loading = false;
         state.boardEvents = [...action.payload].sort(
           (a: any, b: any) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
         );
       })
+      .addCase(loadBoardHistory.rejected, (state) => {
+        state.loading = false;
+      })
+
+      .addCase(loadTicketHistory.pending, (state, action) => {
+        state.loadingTickets[action.meta.arg.ticketId] = true;
+      })
       .addCase(loadTicketHistory.fulfilled, (state, action) => {
         const { ticketId, events } = action.payload;
+        state.loadingTickets[ticketId] = false;
         state.ticketEvents[ticketId] = [...events].sort(
           (a: any, b: any) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
         );
+      })
+      .addCase(loadTicketHistory.rejected, (state, action) => {
+        state.loadingTickets[action.meta.arg.ticketId] = false;
       });
   },
 });
